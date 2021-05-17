@@ -1,0 +1,12 @@
+extends Area2D
+
+signal coin_collected
+
+func _on_coin_body_entered(body): #функция будет проигрывать анимацию, после того, как игрок наступит на монетку
+	$AnimationPlayer.play("bum")#обращаемся к анимации и проигрываем ее
+	emit_signal("coin_collected")
+	$CoinSound.play()
+	set_collision_mask_bit(0,false)#отключаем считывание игрока монетой(исправляет баг, при котором игрок мог два раза собрать одну и ту же монету)
+
+func _on_AnimationPlayer_animation_finished(anim_name): #функция удаляет объект, после того, как закончится анимация
+	queue_free() #удаление монетки
