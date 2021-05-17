@@ -1,0 +1,36 @@
+extends KinematicBody2D
+
+var velocity = Vector2()
+var speed = 100
+export var direction = -1 #направление (куда смотрит) -1 = лево || 1 = право
+#export добавляет возможность изменять начальное направление не в коде, а в настройке объекта
+
+func _ready(): #функция устанавливает начальные параметры
+	if direction == 1:
+		$AnimatedSprite.flip_h = true 
+	$floor_checker.position.x = $CollisionShape2D.shape.get_extents().x * direction
+
+func _physics_process(delta): #функция физики врага
+	
+	if is_on_wall() or not $floor_checker.is_colliding():#если всретит стену или пропадет пол
+		direction = direction * -1 #меняет направление
+		$floor_checker.position.x = $CollisionShape2D.shape.get_extents().x * direction #обнару
+	
+	velocity.y += 10 #увеличение скорости падения
+	
+	velocity.x = speed * direction #скорость движения умножаем на направление
+	
+	move_and_slide(velocity,Vector2.UP) #метод движения
+
+func _on_top_checker_body_entered(body): #функция убивает врага
+	speed = 0#останавливаем врага
+	set_collision_layer_bit(4,false)#отключаем коллизию врага
+	set_collision_mask_bit(0,false)#отключаем свчитывание коллизии игрока этим врагом
+	$sides_checker.set_collision_layer_bit(4,false)#обращаеся к боковому чекеру и отключаем коллизию бокового чекера
+	$sides_checker.set_collision_mask_bit(0,false)#обращаемся к боковому чекеру и отключаем считывание коллизии игрока этим чекером
+	velocity.y = 500 #приравниваем стартовую скорость падения к 50
+	$DeathSound.play()#включаем звук смерти врага
+
+func _on_sides_checker_body_entered(body):#функция, при касании игроком врага сбоку, убивает игрока или отнимает жизни
+	body.bounce(position.x)#вызываем функцию персонажа и отправляет в нее координаты врага
+	$HitSound.play()#включаем звук удара врагом
