@@ -1,0 +1,55 @@
+//Bob
+extends KinematicBody2D
+
+var velocity = Vector2(0,0) #скорость
+var coins = 0
+const SPEED = 280
+const JUMPFORCE = -1100 #прыжок
+const GRAVITY = 35 #скорость падения
+
+func _physics_process(delta): #функция физики персонажа
+	if Input.is_action_pressed("right"): #проверка нажатий (работает с удержанием кнопки)
+		velocity.x = SPEED 
+		$Sprite.play("walk") #через $ обращаемся к другим элементам
+	#play включает анимации
+		$Sprite.flip_h = false #не отзеркаливает анимацию
+	elif Input.is_action_pressed("left"): #elif = else if
+		velocity.x = -SPEED
+		$Sprite.play("walk") #включаем анимацию ходьбы
+		$Sprite.flip_h = true #отзеркаливает анимацию
+	else:
+		$Sprite.play("idle") #включаем анимацию стоянки
+	if not is_on_floor():
+		$Sprite.play("air") #включаем анимацию полета
+		
+	velocity.y = velocity.y + GRAVITY #скорость падения увеличивается на 30
+	
+	if Input.is_action_just_pressed("jump") and is_on_floor(): #проверка нажатий кнопки (без удержания) и проверка на нахождение на полу
+		velocity.y = JUMPFORCE #перемещаем игрока по Yку вверх
+		$SoundJump.play()#включаем звук прыжка
+	
+	
+	velocity = move_and_slide(velocity, Vector2.UP)
+	velocity.x = lerp(velocity.x,0,0.2) #остановка (от чего, к чему, с какой скоростью)
+
+func _on_failzone_body_exited(body): #функция мертвой зоны, при попадании на которую, уровень начинается заново 
+	get_tree().change_scene("res://GameOver.tscn") #перезагрузка сцены
+	
+
+func bounce(var enemyposx):#функция вызывается другим скриптом, при столкновении с врагом. Меняет цвет и отбрасывает игрока
+	set_modulate(Color(1,0.3,0.3,1))#меняем цвет
+	velocity.y = JUMPFORCE*0.6#отскок
+	if position.x<enemyposx:#если х игрока меньше х врага, то игрок находиться слева от врага
+		velocity.x = -800#отскок влево
+		velocity.y = JUMPFORCE*0.5
+	elif position.x>enemyposx:#если х игрока больше х врага, то игрок находиться справа от врага
+		velocity.x = 800#отскок вправо
+	Input.action_release("left")#отключаем нажатие клавиши влево
+	Input.action_release("right")#отключаем нажатие клавиши вправо(включаються толькок после того, как их отпустить)
+	$Timer.start()#запускаем таймер, по завершению которого запуститься его функция
+
+func _on_Timer_timeout():#функция таймера, по завершению которого меняем сцену
+	get_tree().change_scene("res://GameOver.tscn")#перезагружаем уровень
+
+
+
