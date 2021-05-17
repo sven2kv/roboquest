@@ -1,0 +1,2 @@
+func _on_menu_pressed():#функция изменяет сцену на меню по нажитию кнопки 
+	get_tree().change_scene("res://Menu.tscn")#менем сцену
