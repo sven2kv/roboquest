@@ -1,0 +1,3 @@
+extends Button
+func _on_play_pressed():#функция будет запускать уровень по нажатию кнопки
+	get_tree().change_scene("res://Level1.tscn")#переключаем сцену меню на сцену уровня
